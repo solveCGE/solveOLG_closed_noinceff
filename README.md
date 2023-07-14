@@ -1,4 +1,4 @@
-# solveOLG closed economy without income effects in R
+# solveOLG closed economy w/o income effects in R
 Solves a simple AK-OLG-model for a closed economy without income effects in R
 
 ## About
