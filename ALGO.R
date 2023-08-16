@@ -49,7 +49,7 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
   tic();
   
   scaleA            = 1; # initialize
-  scaleab           = 1; # initialize
+  scaleab           = onesrow(tend); # initialize
   
   #===== demography ======#
   compdemo(); # recomputes demographic transition
@@ -87,8 +87,8 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
     # government budget
     P           <<- aggcoh2per((1-notretz)*pz*Nz);
     tauW        <<- aggcoh2per(tauWz*notretz*ellz*thetaz*Nz)/LS;
-    TaxP        <<- aggcoh2per((1-notretz)*tauWz*pz*Nz);
-    Taxl        <<- aggcoh2per(taulz*Nz);
+    TaxP        = aggcoh2per((1-notretz)*tauWz*pz*Nz);
+    Taxl        = aggcoh2per(taulz*Nz);
     Rev         <<- TaxF+(tauF*LD+tauW*LS)*w+Taxl+tauC*Cons+TaxP;
     CG          <<- colSums(cGv*Nv);
     Exp         <<- CG+P;
@@ -143,7 +143,7 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
       tauCz      <<- per2coh(tauCv);
     }
     if (budget_bal == 4) {
-      taul            <<- taul - budget_surplus/(N-Nc); # no updating of taulv, is this fixed now?
+      taul            <<- taul - budget_surplus/(N-Nc);
       taulv[fag:nag,] <<- kronecker(taul,onescol(nag-fag+1));
       taulz           <<- per2coh(taulv);
     } 
@@ -185,7 +185,7 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
   yv       <<- coh2per(yz);
 
   tocloop = toc(quiet = TRUE);
-  cat(paste0("Computation time:\t", (tocloop$toc-tocloop$tic), " sec\n"));
+  cat(paste0("Computation time:\t", format_dec(tocloop$toc-tocloop$tic,4), " sec\n"));
   cat(paste0("CHECK SOLUTION:\t\t", sum(abs(edy)+abs(edl)+abs(edg)+abs(eda)+abs(ediv)+abs(edab))),"\n");
     
 }
