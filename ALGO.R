@@ -9,9 +9,9 @@ compdemo <- function() {
     }
   }
   
-  Nz <<- per2coh(Nv);
-  N  <<- aggcoh2per(Nz);
-  Nc <<- colSums(Nv[1:(fag-1),]);
+  Nz   <<- per2coh(Nv);
+  N    <<- aggcoh2per(Nz);
+  Nc[] <<- colSums(Nv[1:(fag-1),]);
   
   # Compute neutral intervivo-transfers by rescaling received transfers
   for (tt in 1:tend) {
@@ -46,7 +46,7 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
   
   cat("\nRunning Tatonnement Algorithm for Transition:\n\n");
   
-  tic();
+  tstart_loop       = proc.time();
   
   scaleA            = 1; # initialize
   scaleab           = onesrow(tend); # initialize
@@ -55,7 +55,7 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
   compdemo(); # recomputes demographic transition
   
   for (iter in 1:maxiter) {
-    tic(); # tic-iter
+    tstart_iter      = proc.time();
     
     #===== solve the firm problem for given labor demand ======#
     uck[(starttime+1):tend]     <<- (r[starttime:(tend-1)]+delta*(1-tauprof[(starttime+1):tend]))/(1-tauprof[(starttime+1):tend]);
@@ -90,7 +90,7 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
     TaxP        = aggcoh2per((1-notretz)*tauWz*pz*Nz);
     Taxl        = aggcoh2per(taulz*Nz);
     Rev         <<- TaxF+(tauF*LD+tauW*LS)*w+Taxl+tauC*Cons+TaxP;
-    CG          <<- colSums(cGv*Nv);
+    CG[]        <<- colSums(cGv*Nv);
     Exp         <<- CG+P;
     
     # follow given debt-path
@@ -109,13 +109,13 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
     # check Walras' Law: this always has to hold (even out of equilibrium)! If not there is something wrong with accounting in the model
     if (max(abs(edw[starttime:(tend-1)]))> 1e-10) stop("Error: Walras Law does not hold!");
 
-    tociter         = toc(quiet = TRUE);
+    tstop_iter      = proc.time();
     
     #===== checking error and breaking loop ======# 	
     err             = sum(abs(edy[starttime:tend]))+sum(abs(edg[starttime:tend]))+sum(abs(edl[starttime:tend]))+sum(abs(eda[starttime:tend]))+sum(abs(ediv[starttime:tend]))+sum(abs(edab[starttime:tend]));
     err2            = log(err/tol);
     
-    cat(paste0("Iteration:  ", formatC(iter,width=3) ,"   scaleA: ", format_dec(scaleA,6), "   scaleab: ", format_dec(mean(scaleab),6), "   Time: ",  format_dec(tociter$toc-tociter$tic,3), " sec   log of err/tol: ", format_dec(err2,8),"\n"));
+    cat(paste0("Iteration:  ", formatC(iter,width=3) ,"   scaleA: ", format_dec(scaleA,6), "   scaleab: ", format_dec(mean(scaleab),6), "   Time: ",  format_dec(tstop_iter[3]-tstart_iter[3],3), " sec   log of err/tol: ", format_dec(err2,8),"\n"));
     
     if (err2 < 0.0) {    
       cat(paste0(rep(" ",90),collapse=""),"Convergence!\n\n");
@@ -184,8 +184,9 @@ solveOLG <- function(starttime = 1, maxiter = 200, tol = 1e-4, damping_budget = 
   pcv      <<- coh2per(pcz);
   yv       <<- coh2per(yz);
 
-  tocloop = toc(quiet = TRUE);
-  cat(paste0("Computation time:\t", format_dec(tocloop$toc-tocloop$tic,4), " sec\n"));
-  cat(paste0("CHECK SOLUTION:\t\t", sum(abs(edy)+abs(edl)+abs(edg)+abs(eda)+abs(ediv)+abs(edab))),"\n");
+  tstop_loop       = proc.time();
+  
+  cat(paste0("Computation time:\t", format_dec(tstop_loop[3]-tstart_loop[3],4), " sec\n"));
+  cat(paste0("CHECK SOLUTION:\t\t", max(abs(edy)+abs(edl)+abs(edg)+abs(eda)+abs(ediv)+abs(edab))),"\n");
     
 }

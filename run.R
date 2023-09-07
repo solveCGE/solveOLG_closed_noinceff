@@ -9,7 +9,6 @@
 
 rm(list = ls());
 
-library(tictoc);
 library(rootSolve);
 library(here);
 
@@ -78,7 +77,7 @@ gamv[60:nag,] = 1-(1-gamv[60:nag,])*0.9; gamv[nag,]=0; gamz = per2coh(gamv);  # 
 ##########################
 
 # Solve transition path to new steady state
-solveOLG(starttime = 1, maxiter = 100, tol = 1e-3);
+solveOLG(starttime = 1, maxiter = 100, tol = 1e-5);
 
 # some transition plots
 plot(0:tend,c(r0,r),type="l",xlab="time",ylab="real interest rate")
